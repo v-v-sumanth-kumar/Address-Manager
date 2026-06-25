@@ -4,6 +4,7 @@ sqlalchemy==2.0.40
 pydantic==2.11.7
 pydantic-settings==2.9.1
 python-dotenv==1.1.0
+psycopg2-binary==2.9.10
 
 # Testing
 pytest==8.3.4
