@@ -1,6 +1,12 @@
 # Address Book REST API
 
-A production-quality FastAPI application for managing addresses with full CRUD operations, proximity search using the Haversine formula, pagination, filtering, and comprehensive validation.
+A FastAPI application for managing addresses with CRUD operations, proximity search using the Haversine formula, pagination, filtering, and validation.
+
+## Live API
+
+- **Swagger UI:** [https://address-manager-whz5.onrender.com/docs](https://address-manager-whz5.onrender.com/docs)
+- **ReDoc:** [https://address-manager-whz5.onrender.com/redoc](https://address-manager-whz5.onrender.com/redoc)
+- **Health check:** [https://address-manager-whz5.onrender.com/health](https://address-manager-whz5.onrender.com/health)
 
 ## Features
 
@@ -16,65 +22,39 @@ A production-quality FastAPI application for managing addresses with full CRUD o
 - **Health check** — `GET /health` endpoint for monitoring
 - **Auto-generated docs** — Swagger UI and ReDoc
 - **Docker support** — Dockerfile and docker-compose for containerized deployment
-- **Code quality** — Black, Ruff, isort, and pre-commit hooks
+- **SQLite database** — Addresses persisted locally (PostgreSQL supported via `DATABASE_URL`)
 
 ## Folder Structure
 
 ```
-address-book-api/
+Address-Manager/
 ├── app/
-│   ├── api/
-│   │   └── routes.py          # API endpoints and dependency injection
-│   ├── core/
-│   │   ├── config.py          # Environment-based settings
-│   │   ├── exceptions.py      # Custom application exceptions
-│   │   └── logging.py         # Logging configuration
-│   ├── db/
-│   │   ├── database.py        # SQLAlchemy engine and Base
-│   │   └── session.py         # Session factory and get_db dependency
-│   ├── models/
-│   │   └── address.py         # SQLAlchemy Address model
-│   ├── schemas/
-│   │   └── address.py         # Pydantic request/response schemas
-│   ├── services/
-│   │   └── address_service.py # Repository + service business logic
-│   ├── utils/
-│   │   └── geo.py             # Haversine distance calculation
-│   └── main.py                # FastAPI app, middleware, exception handlers
-├── tests/
-│   ├── conftest.py            # Shared pytest fixtures
-│   ├── test_create.py
-│   ├── test_update.py
-│   ├── test_delete.py
-│   ├── test_nearby.py
-│   └── test_validation.py
-├── .env.example
+│   ├── api/routes.py          # API endpoints
+│   ├── core/                  # Config, exceptions, logging
+│   ├── db/                    # SQLAlchemy engine and sessions
+│   ├── models/address.py      # Database model
+│   ├── schemas/address.py     # Request/response schemas
+│   ├── services/              # Business logic
+│   ├── utils/geo.py           # Haversine distance calculation
+│   └── main.py                # FastAPI application entry point
+├── tests/                     # Pytest test suite
 ├── requirements.txt
-├── pyproject.toml
 ├── Dockerfile
-├── docker-compose.yml
-├── .pre-commit-config.yaml
-└── README.md
+└── docker-compose.yml
 ```
 
-## Installation
+## Installation and Running Locally
 
 ### Prerequisites
 
-- Python 3.12 or 3.13 (recommended; Python 3.14 may lack pre-built wheels for some dependencies)
+- Python 3.12+
 - pip
 
-### Virtual Environment Setup
+### Setup
 
 ```bash
-cd address-book-api
+cd Address-Manager
 python -m venv .venv
-```
-
-On Windows, if `python` resolves to 3.14, use an explicit 3.12+ interpreter:
-
-```powershell
-py -3.13 -m venv .venv
 ```
 
 **Windows (PowerShell):**
@@ -89,54 +69,24 @@ py -3.13 -m venv .venv
 source .venv/bin/activate
 ```
 
-### Dependencies
-
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
-```
-
-### Environment Variables
-
-Copy the example environment file and adjust as needed:
-
-```bash
-cp .env.example .env
-```
-
-| Variable           | Default                      | Description                    |
-|--------------------|------------------------------|--------------------------------|
-| `APP_NAME`         | Address Book API             | Application display name       |
-| `APP_VERSION`      | 1.0.0                        | Application version            |
-| `DEBUG`            | false                        | Enable SQLAlchemy query echo   |
-| `DATABASE_URL`     | sqlite:///./address_book.db  | SQLite connection string       |
-| `LOG_LEVEL`        | INFO                         | Logging level                  |
-| `DEFAULT_PAGE_SIZE`| 10                           | Default pagination page size   |
-| `MAX_PAGE_SIZE`    | 100                          | Maximum allowed page size      |
-
-## Running Locally
-
-```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-The API will be available at `http://localhost:8000`.
+The API runs at `http://localhost:8000`. Database tables are created automatically on startup using SQLite (`sqlite:///./address_book.db` by default).
 
-Database tables are created automatically on startup.
+### API Documentation (local)
+
+- **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ## Running Tests
 
 ```bash
 pytest
 ```
-
-With coverage report:
-
-```bash
-pytest --cov=app --cov-report=term-missing
-```
-
-Target coverage: **>90%**
 
 ## Sample API Calls
 
@@ -164,10 +114,10 @@ curl -X POST "http://localhost:8000/addresses" \
   }'
 ```
 
-### List Addresses (with pagination and filters)
+### List Addresses
 
 ```bash
-curl -X GET "http://localhost:8000/addresses?page=1&page_size=10&sort_by=name&sort_order=asc&country=United&name=Acme"
+curl -X GET "http://localhost:8000/addresses?page=1&page_size=10&sort_by=name&sort_order=asc"
 ```
 
 ### Get Single Address
@@ -196,43 +146,17 @@ curl -X DELETE "http://localhost:8000/addresses/{id}"
 curl -X GET "http://localhost:8000/addresses/nearby?latitude=37.7749&longitude=-122.4194&distance_km=10"
 ```
 
-## Swagger Documentation
-
-Interactive API documentation is available at:
-
-- **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
-- **OpenAPI JSON:** [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
-
 ## Docker
-
-### Build and run with Docker Compose
 
 ```bash
 docker compose up --build
 ```
 
-### Build and run with Docker only
+Or without Compose:
 
 ```bash
 docker build -t address-book-api .
 docker run -p 8000:8000 address-book-api
-```
-
-## Code Quality
-
-Install pre-commit hooks:
-
-```bash
-pre-commit install
-```
-
-Run formatters and linters manually:
-
-```bash
-black app tests
-isort app tests
-ruff check app tests
 ```
 
 ## Design Decisions
@@ -249,19 +173,4 @@ ruff check app tests
 
 6. **Pydantic v2 validation** — Field validators strip whitespace and reject blank required strings; coordinate bounds are enforced at both schema and query parameter levels.
 
-7. **Environment-driven config** — `pydantic-settings` loads configuration from `.env` with sensible defaults for local development.
-
-## Future Improvements
-
-- PostgreSQL with PostGIS for production-scale geospatial queries
-- Async SQLAlchemy with connection pooling
-- API authentication (JWT/OAuth2)
-- Rate limiting and request ID tracing
-- Database migrations with Alembic
-- Bounding-box pre-filter before Haversine for performance
-- OpenTelemetry metrics and distributed tracing
-- Kubernetes deployment manifests
-
-## License
-
-MIT
+7. **Environment-driven config** — `pydantic-settings` loads configuration from environment variables with sensible defaults for local development.
