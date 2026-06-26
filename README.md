@@ -45,12 +45,58 @@ Address-Manager/
 
 ## Installation and Running Locally
 
+**Recommended:** Use Docker Compose. It runs Python 3.12 in a container with all dependencies pre-configured, so you avoid local Python version issues and manual setup.
+
 ### Prerequisites
 
-- Python 3.12+
-- pip
+- [Docker](https://docs.docker.com/get-docker/) installed
+- Docker Compose (included with Docker Desktop)
 
-### Setup
+### Run with Docker Compose (recommended)
+
+Uses SQLite with a persistent volume so data survives container restarts.
+
+**1. Open the project folder:**
+
+```bash
+cd Address-Manager
+```
+
+**2. Build and start the API:**
+
+```bash
+docker compose up --build
+```
+
+**3. Verify the API is running:**
+
+```bash
+curl http://localhost:8000/health
+```
+
+Open [http://localhost:8000/docs](http://localhost:8000/docs) in your browser.
+
+**4. Stop the container:**
+
+Press `Ctrl+C`, then:
+
+```bash
+docker compose down
+```
+
+To stop and remove the database volume (deletes all saved addresses):
+
+```bash
+docker compose down -v
+```
+
+The SQLite database file is stored at `/app/data/address_book.db` inside the container, backed by the `address_book_data` Docker volume. Tables are created automatically on startup.
+
+### Run with Python (alternative)
+
+Use this only if you prefer a local virtual environment. **Python 3.12 or 3.13** is required (matches the Docker image). Python 3.14 may fail to install some dependencies on Windows.
+
+**Prerequisites:** Python 3.12+ and pip
 
 ```bash
 cd Address-Manager
@@ -70,8 +116,8 @@ source .venv/bin/activate
 ```
 
 ```bash
-pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -145,52 +191,6 @@ curl -X DELETE "http://localhost:8000/addresses/{id}"
 ```bash
 curl -X GET "http://localhost:8000/addresses/nearby?latitude=37.7749&longitude=-122.4194&distance_km=10"
 ```
-
-## Running with Docker
-
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) installed
-- Docker Compose (included with Docker Desktop)
-
-Uses SQLite with a persistent volume so data survives container restarts.
-
-**1. Clone the repository and open the project folder:**
-
-```bash
-cd Address-Manager
-```
-
-**2. Build and start the API:**
-
-```bash
-docker compose up --build
-```
-
-**3. Verify the API is running:**
-
-- Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-- Health check: [http://localhost:8000/health](http://localhost:8000/health)
-
-```bash
-curl http://localhost:8000/health
-```
-
-**4. Stop the container:**
-
-Press `Ctrl+C`, then:
-
-```bash
-docker compose down
-```
-
-To stop and remove the database volume (deletes all saved addresses):
-
-```bash
-docker compose down -v
-```
-
-The SQLite database file is stored at `/app/data/address_book.db` inside the container, backed by the `address_book_data` Docker volume.
 
 ## Design Decisions
 
