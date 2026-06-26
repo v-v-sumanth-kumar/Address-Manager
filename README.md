@@ -146,18 +146,51 @@ curl -X DELETE "http://localhost:8000/addresses/{id}"
 curl -X GET "http://localhost:8000/addresses/nearby?latitude=37.7749&longitude=-122.4194&distance_km=10"
 ```
 
-## Docker
+## Running with Docker
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) installed
+- Docker Compose (included with Docker Desktop)
+
+Uses SQLite with a persistent volume so data survives container restarts.
+
+**1. Clone the repository and open the project folder:**
+
+```bash
+cd Address-Manager
+```
+
+**2. Build and start the API:**
 
 ```bash
 docker compose up --build
 ```
 
-Or without Compose:
+**3. Verify the API is running:**
+
+- Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
+- Health check: [http://localhost:8000/health](http://localhost:8000/health)
 
 ```bash
-docker build -t address-book-api .
-docker run -p 8000:8000 address-book-api
+curl http://localhost:8000/health
 ```
+
+**4. Stop the container:**
+
+Press `Ctrl+C`, then:
+
+```bash
+docker compose down
+```
+
+To stop and remove the database volume (deletes all saved addresses):
+
+```bash
+docker compose down -v
+```
+
+The SQLite database file is stored at `/app/data/address_book.db` inside the container, backed by the `address_book_data` Docker volume.
 
 ## Design Decisions
 
